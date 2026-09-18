@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
 
 [project]
 name = "opencv-rgb-precommit"
@@ -11,11 +11,6 @@ requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [{ name = "Vladimir Iglovikov" }]
 dependencies = []
-optional-dependencies.test = [
-  "pre-commit>=4.0",
-  "pytest>=8.0",
-  "ruff>=0.16",
-]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "License :: OSI Approved :: MIT License",
@@ -28,19 +23,58 @@ classifiers = [
   "Typing :: Typed",
 ]
 
+[dependency-groups]
+dev = [
+  "mypy>=2.3.0",
+  "pre-commit>=4.6.0",
+  "pyrefly>=1.3.0.dev3",
+  "pytest>=9.0",
+  "pytest-xdist>=3.8",
+  "ruff>=0.16.0",
+]
+
 [project.scripts]
 opencv-rgb-policy = "opencv_rgb_policy.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/opencv_rgb_policy"]
 
 [tool.ruff]
 target-version = "py310"
 line-length = 120
+src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "C90", "PLR"]
+select = ["ALL"]
+ignore = ["COM812", "CPY001", "D"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["PLR0913", "PLR0917", "PLR2004", "S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src", "tests"]
+ignore_missing_imports = false
+follow_imports = "silent"
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+no_implicit_reexport = true
+
+[tool.pyrefly]
+python-version = "3.10"
+project-includes = ["src"]
+project-excludes = ["**/__pycache__", ".venv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = ["-q"]
+pythonpath = ["src"]
+python_files = ["test_*.py"]
+addopts = ["--strict-config", "--strict-markers", "--tb=short", "-n=auto"]
+
+[tool.codespell]
+skip = ".git,*.pdf,*.svg"

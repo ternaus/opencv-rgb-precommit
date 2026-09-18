@@ -1,9 +1,11 @@
 from pathlib import Path
 
+import pytest
+
 from opencv_rgb_policy.cli import main
 
 
-def test_cli_reports_policy_violation(tmp_path: Path, capsys) -> None:
+def test_cli_reports_policy_violation(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     source = tmp_path / "sample.py"
     source.write_text(
         "import cv2\nimage = cv2.imread(path, cv2.IMREAD_COLOR)\nimage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)\n",

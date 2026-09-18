@@ -3,6 +3,9 @@
 `opencv-rgb-precommit` is a small pre-commit hook for Python code that uses
 OpenCV. It protects the channel-order contract without banning BGR images:
 
+The project targets Python 3.10 syntax and keeps its development checks on a
+Python 3.10 environment.
+
 - BGR is valid and may be passed directly to `cv2.imencode`.
 - If OpenCV decodes an image as BGR and that BGR value has no other consumer,
   converting it to RGB is rejected. Use `IMREAD_COLOR_RGB` instead.
@@ -73,11 +76,9 @@ pre-commit run --all-files
 ## Development
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate
-python -m pip install -e '.[test]'
-pytest
-ruff check .
-ruff format --check .
+uv sync --python 3.10 --group dev
+uv run --python 3.10 --locked --group dev pytest
+uv run --python 3.10 --locked --group dev ruff check .
+uv run --python 3.10 --locked --group dev ruff format --check .
 pre-commit run --all-files
 ```

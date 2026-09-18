@@ -21,11 +21,11 @@ def main(argv: list[str] | None = None) -> int:
         try:
             findings = check_source(path.read_text(encoding="utf-8"))
         except SyntaxError as error:
-            print(f"{path}:{error.lineno}:{error.offset}: invalid Python syntax: {error.msg}", file=sys.stderr)
+            sys.stderr.write(f"{path}:{error.lineno}:{error.offset}: invalid Python syntax: {error.msg}\n")
             failed = True
             continue
         for finding in findings:
-            print(_format(path, finding), file=sys.stderr)
+            sys.stderr.write(f"{_format(path, finding)}\n")
             failed = True
     return int(failed)
 

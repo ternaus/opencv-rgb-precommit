@@ -3,7 +3,10 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
 
 
 _CALL_ARGUMENTS = 2
@@ -183,11 +186,11 @@ class _ScopeChecker:
             return True
         return False
 
-    def _visit_loop(self, statement: ast.stmt, state: dict[str, _Value]) -> bool:
+    def _visit_loop(self, statement: ast.For | ast.AsyncFor | ast.While, state: dict[str, _Value]) -> bool:
         if isinstance(statement, (ast.For, ast.AsyncFor)):
             self._inspect_calls(statement.iter, state)
             self._assign(statement.target, _Value(Color.UNKNOWN), state)
-        else:
+        elif isinstance(statement, ast.While):
             self._inspect_calls(statement.test, state)
         loop_state = dict(state)
         self._visit_block(statement.body, loop_state)
@@ -246,9 +249,8 @@ class _ScopeChecker:
         if conversion is None or not node.args:
             return _Value(Color.UNKNOWN)
         source = self._value(node.args[0], state)
-        if conversion == "COLOR_BGR2RGB":
-            if source.color is Color.BGR:
-                return _Value(Color.RGB, source.from_opencv, source.name)
+        if conversion == "COLOR_BGR2RGB" and source.color is Color.BGR:
+            return _Value(Color.RGB, source.from_opencv, source.name)
         if conversion == "COLOR_RGB2BGR" and source.color is Color.RGB:
             return _Value(Color.BGR, source.from_opencv, source.name)
         return _Value(Color.UNKNOWN)
@@ -289,7 +291,7 @@ class _ScopeChecker:
                 continue
             if _is_inside(candidate, conversion):
                 continue
-            if _is_none_guard(candidate, parents):
+            if _is_none_guard(parents):
                 continue
             if name in target_names and _position(candidate) >= _position(conversion):
                 continue
@@ -304,7 +306,7 @@ def _keyword(call: ast.Call, name: str) -> ast.AST | None:
     return None
 
 
-def _target_names(targets: list[ast.AST]) -> set[str]:
+def _target_names(targets: Sequence[ast.AST]) -> set[str]:
     names: set[str] = set()
     for target in targets:
         for node in ast.walk(target):
@@ -320,10 +322,7 @@ def _position(node: ast.AST) -> tuple[int, int]:
 def _is_inside(node: ast.AST, parent: ast.AST) -> bool:
     if node is parent:
         return True
-    for child in ast.iter_child_nodes(parent):
-        if _is_inside(node, child):
-            return True
-    return False
+    return any(_is_inside(node, child) for child in ast.iter_child_nodes(parent))
 
 
 def _calls(node: ast.AST) -> Iterable[ast.Call]:
@@ -340,7 +339,7 @@ def _name_loads(node: ast.AST) -> Iterable[tuple[ast.Name, tuple[ast.AST, ...]]]
     return walk(node, ())
 
 
-def _is_none_guard(node: ast.Name, parents: tuple[ast.AST, ...]) -> bool:
+def _is_none_guard(parents: tuple[ast.AST, ...]) -> bool:
     for parent in reversed(parents):
         if isinstance(parent, ast.UnaryOp) and isinstance(parent.op, ast.Not):
             return True
