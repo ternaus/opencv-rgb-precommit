@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-opencv-rgb-self
+        name: Check this repository's OpenCV RGB policy
+        entry: python -m opencv_rgb_policy.cli
+        language: system
+        types: [python]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.3
+    hooks:
+      - id: ruff
+      - id: ruff-format

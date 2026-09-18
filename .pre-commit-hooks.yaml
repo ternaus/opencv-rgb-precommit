@@ -1,0 +1,5 @@
+- id: check-opencv-rgb
+  name: Check OpenCV RGB policy
+  entry: opencv-rgb-policy
+  language: python
+  types: [python]
