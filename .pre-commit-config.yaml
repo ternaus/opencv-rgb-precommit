@@ -11,19 +11,19 @@ repos:
         files: ^(pyproject\.toml|uv\.lock)$
       - id: mypy
         name: mypy
-        entry: uv run --locked --group dev mypy
+        entry: uv run --locked --no-sync --group dev mypy
         language: system
         pass_filenames: false
         files: ^(src|tests)/.*\.py$
       - id: pyrefly-check
         name: Pyrefly type check
-        entry: uv run --locked --group dev pyrefly check
+        entry: uv run --locked --no-sync --group dev pyrefly check
         language: system
         pass_filenames: false
         files: ^src/.*\.py$
       - id: check-opencv-rgb-self
         name: Check this repository's OpenCV RGB policy
-        entry: uv run --locked --group dev python -m opencv_rgb_policy.cli
+        entry: uv run --locked --no-sync --group dev python -m opencv_rgb_policy.cli
         language: system
         types: [python]
   - repo: https://github.com/ternaus/ruff-policy-hooks
@@ -31,7 +31,7 @@ repos:
     hooks:
       - id: check-ruff-suppressions
         name: Protect mandatory Ruff complexity diagnostics
-        args: [--protect=C901,PLR0912,PLR0913,PLR0915,PLR0917]
+        args: [--protect=C901,PLR0911,PLR0912,PLR0913,PLR0915,PLR0917]
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -60,7 +60,7 @@ repos:
       - id: requirements-txt-fixer
       - id: trailing-whitespace
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.7
+    rev: v0.16.8
     hooks:
       - id: ruff-check
         exclude: __pycache__/
